@@ -3,12 +3,14 @@ import { Message, MessageEmbed } from 'discord.js';
 import commandLineArgs from 'command-line-args';
 import { client } from './client';
 import { log } from './log';
-import { Command, commands } from './ commands';
+import * as commands from './commands';
+import { Command } from './types';
+import { guilds, defaultGuild } from './store';
 
 // Global options
 const optionDefinitions = [
     { name: 'help', alias: 'h', type: Boolean },
-    { name: 'command', type: (commandName: string) => commands[commandName], defaultOption: true },
+    { name: 'command', type: (commandName: string) => commands[commandName as keyof typeof commands], defaultOption: true },
 ];
 
 // Load envs from .env
@@ -22,7 +24,16 @@ if (!botToken) {
 }
 
 client.on('message', async (message: Message) => {
-    const prefix = '[]';
+    // Bail if this isn't in a guild
+    if (!message.guild?.id) return;
+
+    // Set guild's default object
+    if (!guilds.has(message.guild.id)) {
+        guilds.set(message.guild.id, defaultGuild);
+    }
+
+    // Get prefix
+    const prefix = guilds.get(message.guild.id, 'prefix')!;
 
     // Bail if we don't have our prefix
     if (!message.content.startsWith(prefix)) return;
