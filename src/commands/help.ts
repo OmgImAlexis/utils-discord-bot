@@ -18,6 +18,11 @@ export const help = {
 
         // Bot help
         if (!args?.command) {
+            const modRoleId = guilds.get(message.guild!.id)?.modRoleId;
+            const modRole = modRoleId ? message.guild?.roles.cache.get(modRoleId)! : undefined;
+            const isGuildOwner = message.author.id === message.guild!.id;
+            const isAdmin = message.member?.permissions.has('ADMINISTRATOR');
+            const isMod = modRole ? message.member?.roles.cache.has(modRole.name) : false;
             await message.channel.send(new MessageEmbed({
                 color: colours.INFO,
                 author: {
@@ -27,8 +32,10 @@ export const help = {
                     **__Commands__**
 
                     ${Object.values(commands as Commands).filter(command => {
+                        const needsMod = command.isMod;
+
                         // Command is only for mods, admins and the guild owner
-                        if (command.isMod) return false;
+                        if (needsMod && (!isGuildOwner && !isAdmin && !isMod)) return false;
 
                         // Command doesn't have any permissions needed
                         if (!command.permissions) return true;
