@@ -5,7 +5,7 @@ import { client } from './client';
 import { log } from './log';
 import * as commands from './commands';
 import { Command } from './types';
-import { guilds, defaultGuild } from './store';
+import { guilds, defaultGuild, members, defaultMember } from './store';
 
 // Global options
 const optionDefinitions = [
@@ -26,11 +26,6 @@ if (!botToken) {
 client.on('message', async (message: Message) => {
     // Bail if this isn't in a guild
     if (!message.guild?.id) return;
-
-    // Set guild's default object
-    if (!guilds.get(message.guild.id)?.prefix) {
-        guilds.set(message.guild.id, defaultGuild);
-    }
 
     // Get prefix
     const prefix = guilds.get(message.guild.id)?.prefix!;
@@ -58,7 +53,7 @@ client.on('message', async (message: Message) => {
 
     try {
         // Parse arguments
-        const commandArguments = command.arguments ? commandLineArgs(command.arguments, { argv, camelCase: true }) : {};
+        const commandArguments = command.arguments ? commandLineArgs(command.arguments, { argv, camelCase: true, partial: true }) : {};
 
         // Check command permissions
         if ((command.permissions?.length ?? 0) >= 1) {

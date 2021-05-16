@@ -120,9 +120,9 @@ export const kick = {
         // Add an infration to this member
         members.push(`${message.guild!.id}_${member.id}`, {
             caseId: uuid(),
-            type: 'ban',
+            type: 'kick',
             moderator: moderator.id,
-            channel,
+            channel: channel.id,
             reason,
         }, 'infractions');
 

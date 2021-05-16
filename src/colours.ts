@@ -14,6 +14,7 @@ export const colours = {
     CANCELLED: BLURPLE,
 
     // Audit log actions
+    WARNED: ORANGE,
     KICKED: RED,
     BANNED: RED,
 

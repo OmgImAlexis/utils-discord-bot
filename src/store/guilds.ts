@@ -8,11 +8,15 @@ export interface DefaultGuild {
 };
 
 export const defaultGuild: DefaultGuild = {
-    prefix: '[]'
+    prefix: '[]',
+    modRoleId: ''
 };
 
 export const guilds = new EnhancedMap<guildId, DefaultGuild>({
     name: 'guilds',
     autoFetch: true,
-    fetchAll: true
+    fetchAll: true,
+    // @ts-expect-error
+    autoEnsure: defaultGuild,
+    ensureProps: true
 });

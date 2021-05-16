@@ -128,7 +128,7 @@ export const ban = {
             caseId: uuid(),
             type: 'ban',
             moderator: moderator.id,
-            channel,
+            channel: channel.id,
             reason,
         }, 'infractions');
 

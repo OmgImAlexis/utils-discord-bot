@@ -29,7 +29,7 @@ export const settings = {
         }
 
         // Bail if we have no field or value
-        if (!args) throw new Error('FAILED_UPDATING_GUILD_SETTINGS_NO_FIELD_OR_VALUE_SET');
+        if (!args || !args.field || !args.value) throw new Error('FAILED_UPDATING_GUILD_SETTINGS_NO_FIELD_OR_VALUE_SET');
 
         // Set field to user provided value
         if (args.command === 'set') {

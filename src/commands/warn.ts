@@ -1,6 +1,5 @@
 import { v4 as uuid } from 'uuid';
 import { Message, MessageEmbed, MessageReaction, User } from "discord.js";
-import { client } from "../client";
 import { colours } from "../colours";
 import { rules } from "../rules";
 import { members } from "../store";
@@ -33,136 +32,128 @@ export const warn = {
         const reason = (args.reason ?? []).join(' ').replace(/['"]+/g, '') || rule || 'No reason given.';
         const channel = message.channel;
 
-        message.channel.send(member?.manageable ? 'YES' : 'NO');
+        // Failed resolving guild member
+        // Maybe they left?
+        if (!member) throw new Error('FAILED_RESOLVING_GUILD_MEMBER');
 
-        // // Failed resolving guild member
-        // // Maybe they left?
-        // if (!member) throw new Error('FAILED_RESOLVING_GUILD_MEMBER');
+        // Cannot warn bots
+        if (isBot) throw new Error('FAILED_KICKING_BOT');
 
-        // // Cannot kick bots
-        // if (isBot) throw new Error('FAILED_KICKING_BOT');
+        // Build the confirmation embed
+        const confirmationEmbed = new MessageEmbed({
+            color: colours.PENDING,
+            author: {
+                name: 'Warning - pending'
+            },
+            fields: [{
+                name: 'Member',
+                value: `<@${member.id}>`,
+                inline: true
+            }, {
+                name: 'Moderator',
+                value: `<@${moderator.id}>`,
+                inline: true
+            }, {
+                name: 'Channel',
+                value: channel,
+                inline: true
+            }, {
+                name: 'Reason',
+                value: reason
+            }],
+            footer: {
+                text: 'Are you sure you want to warn this member?'
+            }
+        });
 
-        // // Build the confirmation embed
-        // const confirmationEmbed = new MessageEmbed({
-        //     color: colours.PENDING,
-        //     author: {
-        //         name: 'Kick - pending'
-        //     },
-        //     fields: [{
-        //         name: 'Member',
-        //         value: `<@${member.id}>`,
-        //         inline: true
-        //     }, {
-        //         name: 'Moderator',
-        //         value: `<@${moderator.id}>`,
-        //         inline: true
-        //     }, {
-        //         name: 'Channel',
-        //         value: channel,
-        //         inline: true
-        //     }, {
-        //         name: 'Reason',
-        //         value: reason
-        //     }],
-        //     footer: {
-        //         text: 'Are you sure you want to kick this member?'
-        //     }
-        // });
+        // Send the warn confirmation message
+        const confirmationMessage = await message.channel.send(confirmationEmbed);
 
-        // // Send the kick confirmation message
-        // const confirmationMessage = await message.channel.send(confirmationEmbed);
+        // Add confirmation reactions
+        await confirmationMessage.react('✅');
+        await confirmationMessage.react('❌');
 
-        // // Add confirmation reactions
-        // await confirmationMessage.react('✅');
-        // await confirmationMessage.react('❌');
+        // Wait for confirmation
+        const emojis = ['✅', '❌'];
+        const filterCollection = (reaction: MessageReaction, user: User) => user.id == message.author.id && emojis.includes(reaction.emoji.name);
+        const collected = await confirmationMessage.awaitReactions(filterCollection, { max: 1, time: 30000 });
+        const confirmed = collected.first()?.emoji.name === '✅';
+        const timedOut = collected.size === 0;
 
-        // // Wait for confirmation
-        // const emojis = ['✅', '❌'];
-        // const filterCollection = (reaction: MessageReaction, user: User) => user.id == message.author.id && emojis.includes(reaction.emoji.name);
-        // const collected = await confirmationMessage.awaitReactions(filterCollection, { max: 1, time: 30000 });
-        // const confirmed = collected.first()?.emoji.name === '✅';
-        // const timedOut = collected.size === 0;
+        // Remove confirmation reactions
+        await confirmationMessage.reactions.removeAll();
 
-        // // Remove confirmation reactions
-        // await confirmationMessage.reactions.removeAll();
+        // Mod decided not to warn them
+        if (!confirmed || timedOut) {
+            await confirmationMessage.edit(new MessageEmbed({
+                color: timedOut ? colours.TIMEDOUT : colours.BLURPLE,
+                author: {
+                    name: `Warn - ${timedOut ? 'timed-out' : 'cancelled'}`
+                },
+                fields: [{
+                    name: 'Member',
+                    value: `<@${member.id}>`,
+                    inline: true
+                }, {
+                    name: 'Moderator',
+                    value: `<@${moderator.id}>`,
+                    inline: true
+                }, {
+                    name: 'Channel',
+                    value: channel,
+                    inline: true
+                }, {
+                    name: 'Reason',
+                    value: reason
+                }]
+            }));
+            return;
+        }
 
-        // // Mod decided not to kick them
-        // if (!confirmed || timedOut) {
-        //     await confirmationMessage.edit(new MessageEmbed({
-        //         color: timedOut ? colours.TIMEDOUT : colours.BLURPLE,
-        //         author: {
-        //             name: `Kick - ${timedOut ? 'timed-out' : 'cancelled'}`
-        //         },
-        //         fields: [{
-        //             name: 'Member',
-        //             value: `<@${member.id}>`,
-        //             inline: true
-        //         }, {
-        //             name: 'Moderator',
-        //             value: `<@${moderator.id}>`,
-        //             inline: true
-        //         }, {
-        //             name: 'Channel',
-        //             value: channel,
-        //             inline: true
-        //         }, {
-        //             name: 'Reason',
-        //             value: reason
-        //         }]
-        //     }));
-        //     return;
-        // }
+        // Can we warn this member?
+        if (!member.manageable) throw new Error('FAILED_WARNING_NO_PERMISSIONS');
 
-        // // Can we kick this member?
-        // if (!member.kickable) throw new Error('FAILED_KICKING_UNKICKABLE');
+        // Mention this action in the audit-log
 
-        // // Mention this action in the audit-log
+        // Add an infration to this member
+        members.push(`${message.guild!.id}_${member.id}`, {
+            caseId: uuid(),
+            type: 'warn',
+            moderator: moderator.id,
+            channel: channel.id,
+            reason,
+        }, 'infractions');
 
-        // // Add an infration to this member
-        // members.push(`${message.guild!.id}_${member.id}`, {
-        //     caseId: uuid(),
-        //     type: 'ban',
-        //     moderator: moderator.id,
-        //     channel,
-        //     reason,
-        // }, 'infractions');
+        // Let member know they're being warned
+        await member.send(new MessageEmbed({
+            color: colours.WARNED,
+            author: {
+                name: `You\'ve been warned in ${message.guild!.name} for ${reason}!`
+            }
+        }));
 
-        // // Let member know they're being kicked
-        // await member.send(new MessageEmbed({
-        //     color: colours.KICKED,
-        //     author: {
-        //         name: `You\'ve been kicked from ${message.guild!.name}!`
-        //     }
-        // }));
-
-        // // Kick member
-        // await member.kick(reason);
-
-        // // Let mod know member was kicked
-        // await confirmationMessage.edit(new MessageEmbed({
-        //     color: colours.KICKED,
-        //     author: {
-        //         name: 'Kicked'
-        //     },
-        //     fields: [{
-        //         name: 'Member',
-        //         value: `<@${member.id}>`,
-        //         inline: true
-        //     }, {
-        //         name: 'Moderator',
-        //         value: `<@${moderator.id}>`,
-        //         inline: true
-        //     }, {
-        //         name: 'Channel',
-        //         value: channel,
-        //         inline: true
-        //     }, {
-        //         name: 'Reason',
-        //         value: reason
-        //     }]
-        // }));
-
-        // // Clear member from cache
-        // client.users.cache.delete(member.id);
+        // Let mod know member was kicked
+        await confirmationMessage.edit(new MessageEmbed({
+            color: colours.WARNED,
+            author: {
+                name: 'Warned'
+            },
+            fields: [{
+                name: 'Member',
+                value: `<@${member.id}>`,
+                inline: true
+            }, {
+                name: 'Moderator',
+                value: `<@${moderator.id}>`,
+                inline: true
+            }, {
+                name: 'Channel',
+                value: channel,
+                inline: true
+            }, {
+                name: 'Reason',
+                value: reason
+            }]
+        }));
     }
 };
