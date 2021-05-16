@@ -4,6 +4,7 @@ specifiers:
   '@types/command-line-args': ^5.0.0
   '@types/dedent': ^0.7.0
   '@types/node': ^15.3.0
+  '@types/uuid': ^8.3.0
   command-line-args: ^5.1.1
   dedent: ^0.7.0
   discord.js: ^12.5.3
@@ -11,6 +12,7 @@ specifiers:
   enmap: ^5.8.5
   tsup: ^4.10.1
   typescript: ^4.2.4
+  uuid: ^8.3.2
 
 dependencies:
   command-line-args: 5.1.1
@@ -18,11 +20,13 @@ dependencies:
   discord.js: 12.5.3
   dotenv: 9.0.2
   enmap: 5.8.5
+  uuid: 8.3.2
 
 devDependencies:
   '@types/command-line-args': 5.0.0
   '@types/dedent': 0.7.0
   '@types/node': 15.3.0
+  '@types/uuid': 8.3.0
   tsup: 4.10.1_typescript@4.2.4
   typescript: 4.2.4
 
@@ -94,6 +98,10 @@ packages:
 
   /@types/parse-json/4.0.0:
     resolution: {integrity: sha512-//oorEZjL6sbPcKUaCdIGlIUeH26mgzimjBB77G6XRgnDl/L5wOnpyBGRe/Mmf5CVW3PwEBE1NjiMZ/ssFh4wA==}
+    dev: true
+
+  /@types/uuid/8.3.0:
+    resolution: {integrity: sha512-eQ9qFW/fhfGJF8WKHGEHZEyVWfZxrT+6CLIJGBcZPfxUh/+BnEj+UCGYMlr9qZuX/2AltsvwrGqp0LhEW8D0zQ==}
     dev: true
 
   /abort-controller/3.0.0:
@@ -1298,6 +1306,11 @@ packages:
 
   /util-deprecate/1.0.2:
     resolution: {integrity: sha1-RQ1Nyfpw3nMnYvvS1KKJgUGaDM8=}
+    dev: false
+
+  /uuid/8.3.2:
+    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    hasBin: true
     dev: false
 
   /which/2.0.2:

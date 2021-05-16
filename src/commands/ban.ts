@@ -1,7 +1,9 @@
+import { v4 as uuid } from 'uuid';
 import { Message, MessageEmbed, MessageReaction, User } from "discord.js";
 import { client } from "../client";
 import { colours } from "../colours";
 import { rules } from "../rules";
+import { members } from "../store";
 import { UserMention } from "../utils";
 
 export const ban = {
@@ -43,6 +45,9 @@ export const ban = {
             color: colours.PENDING,
             author: {
                 name: 'Ban - pending'
+            },
+            thumbnail: {
+                url: member.user.displayAvatarURL()
             },
             fields: [{
                 name: 'Member',
@@ -89,6 +94,9 @@ export const ban = {
                 author: {
                     name: `Ban - ${timedOut ? 'timed-out' : 'cancelled'}`
                 },
+                thumbnail: {
+                    url: member.user.displayAvatarURL()
+                },
                 fields: [{
                     name: 'Member',
                     value: `<@${member.id}>`,
@@ -114,6 +122,15 @@ export const ban = {
 
         // Mention this action in the audit-log
 
+        // Add an infration to this member
+        members.push(`${message.guild!.id}_${member.id}`, {
+            caseId: uuid(),
+            type: 'ban',
+            moderator: moderator.id,
+            channel,
+            reason,
+        }, 'infractions');
+
         // Let member know they're being banned
         await member.send(new MessageEmbed({
             color: colours.BANNED,
@@ -132,6 +149,9 @@ export const ban = {
             color: colours.BANNED,
             author: {
                 name: 'Banned'
+            },
+            thumbnail: {
+                url: member.user.displayAvatarURL()
             },
             fields: [{
                 name: 'Member',

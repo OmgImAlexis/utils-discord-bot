@@ -1,7 +1,9 @@
+import { v4 as uuid } from 'uuid';
 import { Message, MessageEmbed, MessageReaction, User } from "discord.js";
 import { client } from "../client";
 import { colours } from "../colours";
 import { rules } from "../rules";
+import { members } from "../store";
 import { UserMention } from "../utils";
 
 export const kick = {
@@ -113,6 +115,15 @@ export const kick = {
         if (!member.kickable) throw new Error('FAILED_KICKING_UNKICKABLE');
 
         // Mention this action in the audit-log
+
+        // Add an infration to this member
+        members.push(`${message.guild!.id}_${member.id}`, {
+            caseId: uuid(),
+            type: 'ban',
+            moderator: moderator.id,
+            channel,
+            reason,
+        }, 'infractions');
 
         // Let member know they're being kicked
         await member.send(new MessageEmbed({
