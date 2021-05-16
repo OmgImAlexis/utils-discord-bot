@@ -27,6 +27,9 @@ export const help = {
                     **__Commands__**
 
                     ${Object.values(commands as Commands).filter(command => {
+                        // Command is only for mods, admins and the guild owner
+                        if (command.isMod) return false;
+
                         // Command doesn't have any permissions needed
                         if (!command.permissions) return true;
 

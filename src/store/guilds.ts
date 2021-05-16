@@ -4,6 +4,7 @@ export type guildId = string;
 
 export interface DefaultGuild {
     prefix: string;
+    modRoleId?: string;
 };
 
 export const defaultGuild: DefaultGuild = {

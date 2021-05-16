@@ -4,6 +4,7 @@ import { Message, PermissionString } from "discord.js";
 export interface Command {
     name: string;
     description?: string;
+    isMod?: boolean;
     arguments?: OptionDefinition[];
     permissions?: PermissionString[];
     run: (message: Message, args?: any) => void | Promise<void>;

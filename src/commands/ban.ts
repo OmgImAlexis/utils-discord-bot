@@ -8,6 +8,7 @@ import { UserMention } from "../utils";
 
 export const ban = {
     name: 'ban',
+    isMod: true,
     permissions: ['BAN_MEMBERS'],
     description: 'Ban a member',
     arguments: [{

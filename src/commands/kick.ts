@@ -8,6 +8,7 @@ import { UserMention } from "../utils";
 
 export const kick = {
     name: 'kick',
+    isMod: true,
     permissions: ['KICK_MEMBERS'],
     description: 'Kick a member',
     arguments: [{

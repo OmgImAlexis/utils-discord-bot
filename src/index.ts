@@ -28,12 +28,12 @@ client.on('message', async (message: Message) => {
     if (!message.guild?.id) return;
 
     // Set guild's default object
-    if (!guilds.has(message.guild.id)) {
+    if (!guilds.get(message.guild.id)?.prefix) {
         guilds.set(message.guild.id, defaultGuild);
     }
 
     // Get prefix
-    const prefix = guilds.get(message.guild.id, 'prefix')!;
+    const prefix = guilds.get(message.guild.id)?.prefix!;
 
     // Bail if we don't have our prefix
     if (!message.content.startsWith(prefix)) return;
