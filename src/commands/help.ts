@@ -1,3 +1,4 @@
+import { camelCase } from 'change-case';
 import dedent from 'dedent';
 import { Message, MessageEmbed } from "discord.js";
 import { colours } from "../colours";
@@ -11,9 +12,10 @@ export const help = {
     description: 'Shows the help menu!',
     arguments: [{
         name: 'command',
-        type: (commandName: string) => commands[commandName as keyof typeof commands]
+        type: (commandName: string) => commands[camelCase(commandName) as keyof typeof commands]
     }],
     async run(message: Message, args?: { command: Command }) {
+        console.log({args});
         const prefix = guilds.get(message.guild?.id!, 'prefix');
 
         // Bot help
@@ -54,6 +56,7 @@ export const help = {
 
         // Command specific help
         await message.channel.send(new MessageEmbed({
+            color: colours.INFO,
             author: {
                 name: `Help - ${args.command.name}`
             },
