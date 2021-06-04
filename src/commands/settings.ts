@@ -16,7 +16,7 @@ export const settings = {
         name: 'value',
         type: String
     }],
-    async run(message: Message, args?: { command: string, field: string, value: string }) {
+    async run(message: Message, args: { command?: string, field?: string, value?: string } = {}) {
         const modRoleId = guilds.get(message.guild?.id!, 'modRoleId');
 
         // Skip checks if this is the owner of the guild
@@ -28,11 +28,22 @@ export const settings = {
             if (!message.member?.roles.cache.has(modRoleId)) throw new Error('PERMISSION_DENIED');
         }
 
-        // Bail if we have no field or value
-        if (!args || !args.field || !args.value) throw new Error('FAILED_UPDATING_GUILD_SETTINGS_NO_FIELD_OR_VALUE_SET');
+        // Return current settings when no command is present
+        if (!args.command) {
+            await message.channel.send(new MessageEmbed({
+                author: {
+                    name: 'Settings'
+                },
+                description: '```json\n' + JSON.stringify(guilds.get(message.guild?.id!), null, 2) + '\n```'
+            }));
+            return;
+        }
 
         // Set field to user provided value
         if (args.command === 'set') {
+            // Bail if we have no field and no value
+            if (!args.field || !args.value) throw new Error('FAILED_UPDATING_GUILD_SETTING_NO_FIELD_OR_VALUE_PROVIDED');
+
             // Update guild settings
             guilds.set(message.guild?.id!, args.value, args.field);
 
@@ -41,7 +52,26 @@ export const settings = {
                 author: {
                     name: 'Setting updated'
                 },
-                description: '```json\n' + JSON.stringify(guilds.get(message.guild?.id!)) + '\n```'
+                description: '```json\n' + JSON.stringify(guilds.get(message.guild?.id!), null, 2) + '\n```'
+            }));
+
+            return;
+        }
+
+        // Push a user provided value into a field
+        if (args.command === 'push') {
+            // Bail if we have no field and no value
+            if (!args.field || !args.value) throw new Error('FAILED_PUSHING_INTO_GUILD_SETTING_NO_FIELD_OR_VALUE_PROVIDED');
+
+            // Push into guild settings
+            guilds.push(message.guild?.id!, args.value, args.field);
+
+            // Let moderator know settings were updated
+            await message.channel.send(new MessageEmbed({
+                author: {
+                    name: 'Setting updated'
+                },
+                description: '```json\n' + JSON.stringify(guilds.get(message.guild?.id!), null, 2) + '\n```'
             }));
 
             return;
@@ -49,6 +79,9 @@ export const settings = {
 
         // Delete field that user provided
         if (args.command === 'delete') {
+            // Bail if we have no field and no value
+            if (!args.field) throw new Error('FAILED_DELETING_GUILD_SETTING_NO_FIELD_PROVIDED');
+
             // Update guild settings
             guilds.delete(message.guild?.id!, args.field);
 
@@ -57,7 +90,7 @@ export const settings = {
                 author: {
                     name: 'Setting deleted'
                 },
-                description: '```json\n' + JSON.stringify(guilds.get(message.guild?.id!)) + '\n```'
+                description: '```json\n' + JSON.stringify(guilds.get(message.guild?.id!), null, 2) + '\n```'
             }));
 
             return;
@@ -75,7 +108,7 @@ export const settings = {
                     author: {
                         name: 'Settings reset'
                     },
-                    description: '```json\n' + JSON.stringify(guilds.get(message.guild?.id!)) + '\n```'
+                    description: '```json\n' + JSON.stringify(guilds.get(message.guild?.id!), null, 2) + '\n```'
                 }));
 
                 return;
@@ -94,7 +127,7 @@ export const settings = {
                 author: {
                     name: 'Setting reset'
                 },
-                description: '```json\n' + JSON.stringify(guilds.get(message.guild?.id!)) + '\n```'
+                description: '```json\n' + JSON.stringify(guilds.get(message.guild?.id!), null, 2) + '\n```'
             }));
 
             return;
@@ -105,7 +138,7 @@ export const settings = {
             author: {
                 name: 'Settings'
             },
-            description: '```json\n' + JSON.stringify(guilds.get(message.guild?.id!)) + '\n```'
+            description: '```json\n' + JSON.stringify(guilds.get(message.guild?.id!), null, 2) + '\n```'
         }));
     }
 };
