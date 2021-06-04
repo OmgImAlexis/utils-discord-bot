@@ -1,6 +1,6 @@
 import EnhancedMap from 'enmap';
 
-export type memberId = string;
+type guildId_memberId = string;
 
 interface Infraction {
     caseId: string;
@@ -18,7 +18,7 @@ export const defaultMember: DefaultMember = {
     infractions: []
 };
 
-export const members = new EnhancedMap<memberId, DefaultMember>({
+export const members = new EnhancedMap<guildId_memberId, DefaultMember>({
     name: 'members',
     autoFetch: true,
     fetchAll: true,
